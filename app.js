@@ -1,60 +1,68 @@
-import React, { useState, useEffect } from "react";
-import { collection, addDoc, getDocs } from "firebase/firestore";
-import { db } from "./firebase";
-import "./styles.css";
+// app.js
 
-function App() {
-  const [posts, setPosts] = useState([]);
-  const [newPost, setNewPost] = useState("");
+// Importar desde Firebase CDN (modo modular)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-  // Cargar posts al montar componente
-  useEffect(() => {
-    async function loadPosts() {
-      const querySnapshot = await getDocs(collection(db, "posts"));
-      setPosts(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }
-    loadPosts();
-  }, []);
+// Tu configuración de Firebase (usa tus datos aquí)
+const firebaseConfig = {
+  apiKey: "AIzaSyDdCcoNPdDCOZ9eRAi43o8GFCa0Tu0BUCk",
+  authDomain: "reelment-c8a03.firebaseapp.com",
+  projectId: "reelment-c8a03",
+  storageBucket: "reelment-c8a03.firebasestorage.app",
+  messagingSenderId: "323128662170",
+  appId: "1:323128662170:web:8a5670a8a9aadecfb26723"
+};
 
-  // Función para publicar
-  const handlePublish = async () => {
-    if (!newPost.trim()) return;
-    await addDoc(collection(db, "posts"), {
-      author: "Alex",
-      content: newPost,
-      likes: 0,
-      comments: []
+// Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// Elementos del DOM
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const loginBtn = document.getElementById('login-btn');
+const signupBtn = document.getElementById('signup-btn');
+const logoutBtn = document.getElementById('logout-btn');
+const userSignedOut = document.getElementById('user-signed-out');
+const userSignedIn = document.getElementById('user-signed-in');
+const userEmailSpan = document.getElementById('user-email');
+const errorMessage = document.getElementById('error-message');
+
+// Funciones de login/signup/logout
+loginBtn.addEventListener('click', () => {
+  const email = emailInput.value;
+  const password = passwordInput.value;
+  signInWithEmailAndPassword(auth, email, password)
+    .catch(error => {
+      errorMessage.textContent = error.message;
     });
-    setNewPost("");
-    const querySnapshot = await getDocs(collection(db, "posts"));
-    setPosts(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-  };
+});
 
-  return (
-    <div className="container">
-      <h1>Reelment</h1>
+signupBtn.addEventListener('click', () => {
+  const email = emailInput.value;
+  const password = passwordInput.value;
+  createUserWithEmailAndPassword(auth, email, password)
+    .catch(error => {
+      errorMessage.textContent = error.message;
+    });
+});
 
-      <textarea
-        className="input-post"
-        placeholder="Escribe algo sobre tu mascota..."
-        value={newPost}
-        onChange={(e) => setNewPost(e.target.value)}
-      />
+logoutBtn.addEventListener('click', () => {
+  signOut(auth);
+});
 
-      <button className="btn-publish" onClick={handlePublish}>
-        Publicar
-      </button>
-
-      <div className="posts">
-        {posts.length === 0 && <p>No hay publicaciones todavía.</p>}
-        {posts.map(post => (
-          <div key={post.id} className="post">
-            <strong>{post.author}:</strong> {post.content}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export default App;
+// Detectar cambio de estado de autenticación
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    userSignedOut.style.display = 'none';
+    userSignedIn.style.display = 'block';
+    userEmailSpan.textContent = user.email;
+    errorMessage.textContent = '';
+    emailInput.value = '';
+    passwordInput.value = '';
+  } else {
+    userSignedOut.style.display = 'block';
+    userSignedIn.style.display = 'none';
+  }
+});
