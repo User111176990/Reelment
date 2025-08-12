@@ -21,17 +21,4 @@ function renderPosts() {
   });
 }
 
-onAuthStateChanged(auth, user => {
-  if (user) {
-    userEmailSpan.textContent = user.email;
-    renderPosts();
-  } else {
-    window.location.href = "index.html";
-  }
-});
-
-logoutBtn.addEventListener('click', () => {
-  signOut(auth).then(() => {
-    window.location.href = "index.html";
-  });
-});
+onAuthStateChanged(
