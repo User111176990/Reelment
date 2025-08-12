@@ -1,47 +1,31 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reelment</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <title>Reelment</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header>
-    <h1>Reelment</h1>
-    <nav>
-      <button id="feed-btn">Stories</button>
-      <button id="explore-btn">Explorar</button>
-      <button id="logout-btn" class="hidden">Cerrar sesión</button>
-    </nav>
-  </header>
+    <div id="auth-section">
+        <h1>Reelment</h1>
+        <input type="email" id="email" placeholder="Correo">
+        <input type="password" id="password" placeholder="Contraseña">
+        <button id="login-btn">Iniciar sesión</button>
+        <button id="signup-btn">Registrarse</button>
+        <p id="error-message"></p>
+    </div>
 
-  <main id="auth-section">
-    <h2>Iniciar sesión o registrarse</h2>
-    <input type="email" id="email" placeholder="Correo">
-    <input type="password" id="password" placeholder="Contraseña">
-    <button id="login-btn">Iniciar sesión</button>
-    <button id="signup-btn">Registrarse</button>
-    <p id="error-message"></p>
-  </main>
+    <div id="app-section" style="display:none;">
+        <button id="logout-btn">Cerrar sesión</button>
+        <h2>Stories</h2>
+        <input type="file" id="story-file">
+        <button id="post-story-btn">Publicar Story</button>
+        <div id="stories-feed"></div>
+        <a href="explorar.html">Ir a Explorar</a>
+    </div>
 
-  <main id="app-section" class="hidden">
-    <section id="story-feed">
-      <h2>Stories</h2>
-      <input type="file" id="story-upload">
-      <button id="post-story-btn">Publicar Story</button>
-      <div id="stories-container"></div>
-    </section>
-
-    <section id="explore-section" class="hidden">
-      <h2>Explorar</h2>
-      <input type="file" id="explore-upload">
-      <button id="post-explore-btn">Publicar en Explorar</button>
-      <div id="explore-container"></div>
-    </section>
-  </main>
-
-  <script type="module" src="firebase-config.js"></script>
-  <script type="module" src="app.js"></script>
+    <script type="module" src="firebase.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
