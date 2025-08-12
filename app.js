@@ -1,4 +1,4 @@
-// ⚠️ Sustituye estos valores con los que te da Firebase
+// Sustituye estos valores con los que te da Firebase
 const firebaseConfig = {
   apiKey: "TU_API_KEY",
   authDomain: "TU_AUTH_DOMAIN",
