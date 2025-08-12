@@ -1,148 +1,95 @@
-import { auth, storage, db } from "./firebase-config.js";
-import { 
-  signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-import { 
-  ref, uploadBytes, getDownloadURL 
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
-import { 
-  collection, addDoc, getDocs, query, where, deleteDoc, doc, Timestamp 
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+// app.js
+import { auth, db, storage } from "./firebase.js";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+import { collection, addDoc, query, getDocs, serverTimestamp, where, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-storage.js";
 
-// Elementos
-const authSection = document.getElementById("auth-section");
-const appSection = document.getElementById("app-section");
+// Elements
 const loginBtn = document.getElementById("login-btn");
 const signupBtn = document.getElementById("signup-btn");
 const logoutBtn = document.getElementById("logout-btn");
-const emailInput = document.getElementById("email");
-const passwordInput = document.getElementById("password");
+const postStoryBtn = document.getElementById("post-story-btn");
+const storyFile = document.getElementById("story-file");
+const storiesFeed = document.getElementById("stories-feed");
 const errorMessage = document.getElementById("error-message");
 
-const postStoryBtn = document.getElementById("post-story-btn");
-const storyUpload = document.getElementById("story-upload");
-const storiesContainer = document.getElementById("stories-container");
+if (loginBtn) {
+    loginBtn.onclick = async () => {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+        } catch (e) {
+            errorMessage.textContent = e.message;
+        }
+    };
+}
 
-const postExploreBtn = document.getElementById("post-explore-btn");
-const exploreUpload = document.getElementById("explore-upload");
-const exploreContainer = document.getElementById("explore-container");
+if (signupBtn) {
+    signupBtn.onclick = async () => {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        try {
+            await createUserWithEmailAndPassword(auth, email, password);
+        } catch (e) {
+            errorMessage.textContent = e.message;
+        }
+    };
+}
 
-const feedBtn = document.getElementById("feed-btn");
-const exploreBtn = document.getElementById("explore-btn");
-const storyFeedSection = document.getElementById("story-feed");
-const exploreSection = document.getElementById("explore-section");
+if (logoutBtn) {
+    logoutBtn.onclick = async () => {
+        await signOut(auth);
+    };
+}
 
-// Registro
-signupBtn.addEventListener("click", async () => {
-  try {
-    await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-  } catch (e) {
-    errorMessage.textContent = e.message;
-  }
-});
+// Mostrar stories
+async function loadStories() {
+    storiesFeed.innerHTML = "";
+    const q = query(collection(db, "stories"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    const now = Date.now();
 
-// Login
-loginBtn.addEventListener("click", async () => {
-  try {
-    await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-  } catch (e) {
-    errorMessage.textContent = e.message;
-  }
-});
-
-// Logout
-logoutBtn.addEventListener("click", () => signOut(auth));
-
-// Cambio de sesión
-onAuthStateChanged(auth, user => {
-  if (user) {
-    authSection.classList.add("hidden");
-    appSection.classList.remove("hidden");
-    logoutBtn.classList.remove("hidden");
-    cargarStories();
-    cargarExplorar();
-  } else {
-    authSection.classList.remove("hidden");
-    appSection.classList.add("hidden");
-    logoutBtn.classList.add("hidden");
-  }
-});
-
-// Publicar Story
-postStoryBtn.addEventListener("click", async () => {
-  if (storyUpload.files.length > 0) {
-    const file = storyUpload.files[0];
-    const storageRef = ref(storage, `stories/${auth.currentUser.uid}/${file.name}`);
-    await uploadBytes(storageRef, file);
-    const url = await getDownloadURL(storageRef);
-
-    await addDoc(collection(db, "stories"), {
-      user: auth.currentUser.email,
-      url: url,
-      createdAt: Timestamp.now()
+    snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        if (now - data.createdAt.toMillis() < 3 * 24 * 60 * 60 * 1000) { // 3 días
+            const img = document.createElement("img");
+            img.src = data.url;
+            storiesFeed.appendChild(img);
+        } else {
+            deleteDoc(doc(db, "stories", docSnap.id));
+        }
     });
-    cargarStories();
-  }
-});
+}
 
-// Publicar en Explorar
-postExploreBtn.addEventListener("click", async () => {
-  if (exploreUpload.files.length > 0) {
-    const file = exploreUpload.files[0];
-    const storageRef = ref(storage, `explore/${auth.currentUser.uid}/${file.name}`);
-    await uploadBytes(storageRef, file);
-    const url = await getDownloadURL(storageRef);
+// Publicar story
+if (postStoryBtn) {
+    postStoryBtn.onclick = async () => {
+        const file = storyFile.files[0];
+        if (!file) return;
 
-    await addDoc(collection(db, "explore"), {
-      user: auth.currentUser.email,
-      url: url,
-      createdAt: Timestamp.now()
-    });
-    cargarExplorar();
-  }
-});
+        const storageRef = ref(storage, `stories/${Date.now()}-${file.name}`);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
 
-// Cargar Stories (3 días)
-async function cargarStories() {
-  storiesContainer.innerHTML = "";
-  const q = query(collection(db, "stories"));
-  const querySnapshot = await getDocs(q);
+        await addDoc(collection(db, "stories"), {
+            url,
+            createdAt: serverTimestamp(),
+            user: auth.currentUser.email
+        });
 
-  const ahora = Timestamp.now().seconds;
-  querySnapshot.forEach(async (docSnap) => {
-    const data = docSnap.data();
-    const expiracion = data.createdAt.seconds + (3 * 24 * 60 * 60);
-    if (ahora > expiracion) {
-      await deleteDoc(doc(db, "stories", docSnap.id));
+        loadStories();
+    };
+}
+
+// Estado de usuario
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        document.getElementById("auth-section").style.display = "none";
+        document.getElementById("app-section").style.display = "block";
+        loadStories();
     } else {
-      const img = document.createElement("img");
-      img.src = data.url;
-      storiesContainer.appendChild(img);
+        document.getElementById("auth-section").style.display = "block";
+        document.getElementById("app-section").style.display = "none";
     }
-  });
-}
-
-// Cargar Explorar
-async function cargarExplorar() {
-  exploreContainer.innerHTML = "";
-  const q = query(collection(db, "explore"));
-  const querySnapshot = await getDocs(q);
-
-  querySnapshot.forEach((docSnap) => {
-    const data = docSnap.data();
-    const img = document.createElement("img");
-    img.src = data.url;
-    exploreContainer.appendChild(img);
-  });
-}
-
-// Navegación
-feedBtn.addEventListener("click", () => {
-  storyFeedSection.classList.remove("hidden");
-  exploreSection.classList.add("hidden");
-});
-
-exploreBtn.addEventListener("click", () => {
-  storyFeedSection.classList.add("hidden");
-  exploreSection.classList.remove("hidden");
 });
