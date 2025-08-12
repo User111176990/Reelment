@@ -1,11 +1,31 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Reelment</title>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
-</html> 
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reelment - Login Moderno</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Reelment</h1>
+
+    <div id="user-signed-out" class="card">
+      <h2>Iniciar sesión o crear cuenta</h2>
+      <input type="email" id="email" placeholder="Correo electrónico" />
+      <input type="password" id="password" placeholder="Contraseña" />
+      <button id="login-btn">Iniciar sesión</button>
+      <button id="signup-btn">Registrarse</button>
+      <p id="error-message"></p>
+    </div>
+
+    <div id="user-signed-in" class="card" style="display:none;">
+      <h2>Bienvenido, <span id="user-email"></span></h2>
+      <button id="logout-btn">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <!-- Firebase v9 Modular SDK desde CDN -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
