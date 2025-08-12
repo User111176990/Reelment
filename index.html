@@ -1,37 +1,30 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reelment - Login</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reelment - Inicio de Sesión</title>
 </head>
 <body>
-
-  <div class="container">
-
-    <h1>Reelment</h1>
-
-    <div id="user-signed-out">
-      <h2>Iniciar sesión</h2>
-      <input type="email" id="email" placeholder="Correo electrónico" />
-      <input type="password" id="password" placeholder="Contraseña" />
-      <button id="login-btn">Entrar</button>
-      <button id="signup-btn">Crear cuenta</button>
-      <div id="error-message"></div>
-    </div>
-
-    <div id="user-signed-in" style="display:none;">
-      <h2>Bienvenido, <span id="user-email"></span></h2>
-      <button id="logout-btn">Cerrar sesión</button>
-    </div>
-
+  <div id="user-signed-out">
+    <h2>Inicia sesión o regístrate</h2>
+    <input type="email" id="email" placeholder="Correo electrónico">
+    <input type="password" id="password" placeholder="Contraseña">
+    <button id="login-btn">Iniciar Sesión</button>
+    <button id="signup-btn">Registrarse</button>
+    <p id="error-message" style="color:red;"></p>
   </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <div id="user-signed-in" style="display:none;">
+    <h2>Bienvenido, <span id="user-email"></span></h2>
+    <button id="logout-btn">Cerrar sesión</button>
+  </div>
 
+  <!-- Firebase App -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+  <!-- Tu código -->
   <script src="app.js"></script>
 </body>
 </html>
